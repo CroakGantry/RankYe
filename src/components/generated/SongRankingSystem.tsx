@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, Trophy, FileDown, Loader2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import { ChevronUp, ChevronDown, ChevronLeft, Trophy } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 const STORAGE_KEY = 'rankye-song-order';
@@ -22,6 +21,7 @@ type Song = {
 };
 type SongRankingSystemProps = {
   initialSongs?: Song[];
+  onBack?: () => void;
 };
 const defaultSongs: Song[] = [{
   id: '1',
@@ -159,11 +159,10 @@ const loadSavedOrder = (defaultSongList: Song[]): Song[] => {
 
 // @component: SongRankingSystem
 export const SongRankingSystem = ({
-  initialSongs = defaultSongs
+  initialSongs = defaultSongs,
+  onBack
 }: SongRankingSystemProps) => {
   const [songs, setSongs] = useState<Song[]>(() => loadSavedOrder(initialSongs));
-  const [isExporting, setIsExporting] = useState(false);
-  const exportContainerRef = useRef<HTMLDivElement>(null);
 
   // Save to localStorage whenever songs order changes
   useEffect(() => {
@@ -174,47 +173,6 @@ export const SongRankingSystem = ({
       console.error('Failed to save rankings:', e);
     }
   }, [songs]);
-
-  // Export function for high-resolution image
-  const handleExport = async () => {
-    if (!exportContainerRef.current || isExporting) return;
-    
-    setIsExporting(true);
-    
-    // Hide control buttons during export
-    const controlButtons = exportContainerRef.current.querySelectorAll('.export-hide');
-    controlButtons.forEach(el => (el as HTMLElement).style.display = 'none');
-    
-    try {
-      const canvas = await html2canvas(exportContainerRef.current, {
-        scale: 2, // 2x for high resolution
-        backgroundColor: '#0f0f0f',
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-      });
-      
-      // Convert to blob and download
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'my-top-songs.png';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }
-      }, 'image/png', 1.0);
-    } catch (e) {
-      console.error('Export failed:', e);
-    } finally {
-      // Restore control buttons
-      controlButtons.forEach(el => (el as HTMLElement).style.display = '');
-      setIsExporting(false);
-    }
-  };
 
   const moveSong = (songId: string, direction: 'up' | 'down') => {
     setSongs(prevSongs => {
@@ -236,33 +194,27 @@ export const SongRankingSystem = ({
   // @return
   return <div className="min-h-screen bg-[#0f0f0f] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-white mb-2">Top Songs</h1>
-          <button 
-            onClick={handleExport}
-            disabled={isExporting}
-            className={cn(
-              'flex items-center gap-2 px-6 py-3 rounded-lg',
-              'bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f]',
-              'border border-white/10 hover:border-white/20',
-              'text-white font-semibold',
-              'transition-all duration-300',
-              'hover:shadow-lg hover:shadow-orange-500/20',
-              'hover:scale-105 active:scale-95',
-              isExporting && 'opacity-70 cursor-wait'
-            )}
-          >
-            {isExporting ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <FileDown className="w-5 h-5" />
-            )}
-            <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export Image'}</span>
-          </button>
+        <div className="mb-8 flex items-center gap-4">
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className={cn(
+                'w-10 h-10 rounded-full flex items-center justify-center',
+                'bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f]',
+                'border border-white/10 hover:border-white/20',
+                'text-white',
+                'transition-all duration-300',
+                'hover:shadow-lg hover:shadow-orange-500/20',
+                'hover:scale-110 active:scale-95'
+              )}
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+          <h1 className="text-4xl font-bold text-white">Top Songs</h1>
         </div>
 
-        {/* Export Container - Contains only awards and top 10 songs for export */}
-        <div ref={exportContainerRef} className="bg-[#0f0f0f] p-4 rounded-xl">
+        <div className="bg-[#0f0f0f] p-4 rounded-xl">
           {/* Awards Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {/* Top Song Award */}
@@ -368,7 +320,7 @@ export const SongRankingSystem = ({
                       <p className="text-gray-400 truncate">{song.artist} • {song.album}</p>
                     </div>
 
-                    <div className="flex gap-2 export-hide">
+                    <div className="flex gap-2">
                       <button 
                         onClick={() => moveSong(song.id, 'up')} 
                         disabled={index === 0} 

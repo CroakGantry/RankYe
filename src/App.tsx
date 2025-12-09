@@ -24,7 +24,7 @@ function App() {
     if (currentPage === 'home') {
       return <RankKanyeHome onProceed={() => setCurrentPage('ranking')} />;
     }
-    return <SongRankingSystem />; // %EXPORT_STATEMENT%
+    return <SongRankingSystem onBack={() => setCurrentPage('home')} />; // %EXPORT_STATEMENT%
   }, [currentPage]);
 
   if (container === 'centered') {
