@@ -163,20 +163,14 @@ export const RankKanyeHome = ({
                     )}
                   </AnimatePresence>
                 </div>
-                <AnimatePresence>
-                  {isPlaying && (
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      transition={{ 
-                        scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
-                        opacity: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
-                      }}
-                      className="absolute inset-0 rounded-full border-2 border-red-500/50"
-                    />
-                  )}
-                </AnimatePresence>
+                <motion.div
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] }}
+                  transition={{ 
+                    scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+                    opacity: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                  className="absolute inset-0 rounded-full border-2 border-red-500/50"
+                />
               </motion.button>
 
               {/* Stop button - appears/disappears when playing */}
@@ -222,23 +216,43 @@ export const RankKanyeHome = ({
           delay: 0.4,
           duration: 0.6
         }} className="mb-12 flex justify-center">
-            <div className="relative w-64 h-96 md:w-80 md:h-[30rem] rounded-2xl overflow-hidden group">
+            <motion.div 
+              animate={isPlaying ? {
+                scale: [1, 1.006, 1],
+              } : { scale: 1 }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="relative w-64 h-96 md:w-80 md:h-[30rem] rounded-2xl overflow-hidden group"
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-red-600/30 via-orange-500/30 to-pink-500/30 mix-blend-multiply" />
               <img src="/RankYeHome.jpg" alt="Kanye West" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute inset-0 border-2 border-red-500/30 rounded-2xl" />
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Proceed Button */}
           <motion.button initial={{
           opacity: 0,
           y: 20
-        }} animate={{
+        }} animate={isPlaying ? {
           opacity: 1,
-          y: 0
+          y: 0,
+          scale: [1, 1.006, 1]
+        } : {
+          opacity: 1,
+          y: 0,
+          scale: 1
         }} transition={{
           delay: 0.6,
-          duration: 0.6
+          duration: 2,
+          scale: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }
         }} onClick={handleProceed} className="group relative px-12 py-5 text-xl font-bold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/30">
             {/* Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-r from-red-700 via-orange-600 to-red-500 transition-all duration-300 group-hover:scale-110" />
