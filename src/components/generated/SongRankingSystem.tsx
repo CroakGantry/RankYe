@@ -1,133 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, ChevronLeft, Trophy } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, Trophy, Play } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { kanyeSongs, type Song } from '../../data/kanye-music';
+import { useAudioPreview } from '../../hooks/use-audio-preview';
+import { fetchPreviewUrls } from '../../lib/itunes-api';
 
 const STORAGE_KEY = 'rankye-song-order';
-type SongMetrics = {
-  lastWeek: number;
-  peak: number;
-  weeks: number;
-};
-type Song = {
-  id: string;
-  rank: number;
-  title: string;
-  artist: string;
-  album: string;
-  image: string;
-  metrics: SongMetrics;
-  change: 'up' | 'down' | 'same';
-};
+
 type SongRankingSystemProps = {
   initialSongs?: Song[];
   onBack?: () => void;
 };
-const defaultSongs: Song[] = [{
-  id: '1',
-  rank: 1,
-  title: 'Paint The Town Red',
-  artist: 'Doja Cat',
-  album: 'Scarlet',
-  image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 2,
-    peak: 1,
-    weeks: 18
-  },
-  change: 'up'
-}, {
-  id: '2',
-  rank: 2,
-  title: "I'm The Problem",
-  artist: 'Morgan Wallen',
-  album: 'One Thing At A Time',
-  image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 4,
-    peak: 1,
-    weeks: 29
-  },
-  change: 'up'
-}, {
-  id: '3',
-  rank: 3,
-  title: 'Cruel Summer',
-  artist: 'Taylor Swift',
-  album: 'Lover',
-  image: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 1,
-    peak: 1,
-    weeks: 52
-  },
-  change: 'down'
-}, {
-  id: '4',
-  rank: 4,
-  title: 'Snooze',
-  artist: 'SZA',
-  album: 'SOS',
-  image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 3,
-    peak: 2,
-    weeks: 35
-  },
-  change: 'down'
-}, {
-  id: '5',
-  rank: 5,
-  title: 'Strangers',
-  artist: 'Kenya Grace',
-  album: 'Strangers - Single',
-  image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 7,
-    peak: 5,
-    weeks: 12
-  },
-  change: 'up'
-}, {
-  id: '6',
-  rank: 6,
-  title: 'vampire',
-  artist: 'Olivia Rodrigo',
-  album: 'GUTS',
-  image: 'https://images.unsplash.com/photo-1619983081563-430f63602796?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 5,
-    peak: 1,
-    weeks: 16
-  },
-  change: 'down'
-}, {
-  id: '7',
-  rank: 7,
-  title: 'greedy',
-  artist: 'Tate McRae',
-  album: 'THINK LATER',
-  image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 9,
-    peak: 7,
-    weeks: 8
-  },
-  change: 'up'
-}, {
-  id: '8',
-  rank: 8,
-  title: 'Rich Baby Daddy',
-  artist: 'Drake ft. Sexyy Red',
-  album: 'For All The Dogs',
-  image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 6,
-    peak: 4,
-    weeks: 22
-  },
-  change: 'down'
-}];
+
+const defaultSongs: Song[] = kanyeSongs;
 
 // Helper to load saved order from localStorage
 const loadSavedOrder = (defaultSongList: Song[]): Song[] => {
@@ -157,12 +43,36 @@ const loadSavedOrder = (defaultSongList: Song[]): Song[] => {
   return defaultSongList;
 };
 
+// Audio wave animation component
+const AudioWave = () => (
+  <div className="flex items-center gap-[2px] h-4">
+    {[0, 1, 2, 3].map((i) => (
+      <motion.div
+        key={i}
+        className="w-[3px] bg-gradient-to-t from-cyan-400 to-cyan-300 rounded-full"
+        animate={{
+          height: ['8px', '16px', '8px'],
+        }}
+        transition={{
+          duration: 0.5,
+          repeat: Infinity,
+          delay: i * 0.1,
+          ease: 'easeInOut',
+        }}
+      />
+    ))}
+  </div>
+);
+
 // @component: SongRankingSystem
 export const SongRankingSystem = ({
   initialSongs = defaultSongs,
   onBack
 }: SongRankingSystemProps) => {
   const [songs, setSongs] = useState<Song[]>(() => loadSavedOrder(initialSongs));
+  const [previewUrls, setPreviewUrls] = useState<Map<string, string>>(new Map());
+  const [loadingPreviews, setLoadingPreviews] = useState(true);
+  const { currentlyPlaying, isLoading: audioLoading, toggle } = useAudioPreview();
 
   // Save to localStorage whenever songs order changes
   useEffect(() => {
@@ -173,6 +83,24 @@ export const SongRankingSystem = ({
       console.error('Failed to save rankings:', e);
     }
   }, [songs]);
+
+  // Fetch preview URLs from iTunes on mount
+  useEffect(() => {
+    const loadPreviews = async () => {
+      setLoadingPreviews(true);
+      try {
+        const urls = await fetchPreviewUrls(
+          songs.map(s => ({ id: s.id, title: s.title, artist: s.artist, album: s.album }))
+        );
+        setPreviewUrls(urls);
+      } catch (e) {
+        console.error('Failed to fetch previews:', e);
+      } finally {
+        setLoadingPreviews(false);
+      }
+    };
+    loadPreviews();
+  }, []);
 
   const moveSong = (songId: string, direction: 'up' | 'down') => {
     setSongs(prevSongs => {
@@ -275,78 +203,136 @@ export const SongRankingSystem = ({
             </div>
           </div>
 
-          {/* Song Cards - Top 10 with controls */}
+          {/* Song Cards */}
           <div className="space-y-2">
             <AnimatePresence mode="popLayout">
-              {songs.slice(0, 10).map((song, index) => (
-                <motion.div 
-                  key={song.id} 
-                  layout 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{
-                    layout: { type: 'spring', stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 },
-                    y: { duration: 0.2 }
-                  }} 
-                  className={cn(
-                    'group relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] rounded-xl overflow-hidden',
-                    'border border-white/5 hover:border-cyan-500/30 transition-all duration-300',
-                    'hover:shadow-lg hover:shadow-cyan-500/10'
-                  )}
-                >
-                  <div className="flex items-center gap-4 p-4">
-                    <div className="flex-shrink-0 w-16 text-center">
-                      <motion.span 
-                        key={`rank-${song.rank}`} 
-                        initial={{ scale: 1.2, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="text-4xl font-black text-white"
-                      >
-                        {song.rank}
-                      </motion.span>
-                    </div>
+              {songs.map((song, index) => {
+                const previewUrl = previewUrls.get(song.id);
+                const isPlaying = currentlyPlaying === song.id;
+                const hasPreview = !!previewUrl;
+                
+                return (
+                  <motion.div 
+                    key={song.id} 
+                    layout 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{
+                      layout: { type: 'spring', stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 },
+                      y: { duration: 0.2 }
+                    }} 
+                    className={cn(
+                      'group relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] rounded-xl overflow-hidden',
+                      'border transition-all duration-300',
+                      isPlaying 
+                        ? 'border-cyan-500/50 shadow-lg shadow-cyan-500/20' 
+                        : 'border-white/5 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10'
+                    )}
+                  >
+                    <div className="flex items-center gap-4 p-4">
+                      {/* Rank Number */}
+                      <div className="flex-shrink-0 w-16 text-center">
+                        <motion.span 
+                          key={`rank-${song.rank}`} 
+                          initial={{ scale: 1.2, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-4xl font-black text-white"
+                        >
+                          {song.rank}
+                        </motion.span>
+                      </div>
 
-                    <div className="flex-shrink-0">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-red-500/40 via-orange-500/40 to-pink-500/40 mix-blend-multiply" />
-                        <img src={song.image} alt={song.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                      {/* Album Art with Play Button Overlay */}
+                      <div 
+                        className={cn(
+                          "flex-shrink-0 relative cursor-pointer",
+                          !hasPreview && !loadingPreviews && "opacity-60 cursor-not-allowed"
+                        )}
+                        onClick={() => hasPreview && toggle(song.id, previewUrl)}
+                      >
+                        <div className="w-20 h-20 rounded-lg overflow-hidden relative">
+                          <div className={cn(
+                            "absolute inset-0 mix-blend-multiply transition-all duration-300",
+                            isPlaying 
+                              ? "bg-gradient-to-br from-cyan-500/50 via-blue-500/50 to-purple-500/50" 
+                              : "bg-gradient-to-br from-red-500/40 via-orange-500/40 to-pink-500/40"
+                          )} />
+                          <img src={song.image} alt={song.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                          
+                          {/* Play/Pause Overlay */}
+                          {hasPreview && (
+                            <div className={cn(
+                              "absolute inset-0 flex items-center justify-center transition-all duration-200",
+                              isPlaying 
+                                ? "bg-black/40" 
+                                : "bg-black/0 group-hover:bg-black/40"
+                            )}>
+                              {isPlaying ? (
+                                <AudioWave />
+                              ) : (
+                                <Play className={cn(
+                                  "w-8 h-8 text-white transition-all duration-200",
+                                  "opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100"
+                                )} fill="white" />
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Loading indicator */}
+                          {loadingPreviews && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Song Info */}
+                      <div 
+                        className={cn(
+                          "flex-1 min-w-0 cursor-pointer",
+                          hasPreview && "hover:opacity-80"
+                        )}
+                        onClick={() => hasPreview && toggle(song.id, previewUrl)}
+                      >
+                        <h3 className="text-xl font-bold text-white truncate mb-1">{song.title}</h3>
+                        <p className="text-gray-400 truncate">{song.artist} • {song.album}</p>
+                        {!hasPreview && !loadingPreviews && (
+                          <p className="text-gray-600 text-xs mt-1">Preview not available</p>
+                        )}
+                      </div>
+
+                      {/* Rank Controls */}
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); moveSong(song.id, 'up'); }} 
+                          disabled={index === 0} 
+                          className={cn(
+                            'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200',
+                            'border border-white/10 hover:border-cyan-400/50',
+                            index === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-cyan-400/10 hover:scale-110'
+                          )}
+                        >
+                          <ChevronUp className="w-5 h-5 text-cyan-400" />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); moveSong(song.id, 'down'); }} 
+                          disabled={index === songs.length - 1} 
+                          className={cn(
+                            'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200',
+                            'border border-white/10 hover:border-orange-400/50',
+                            index === songs.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-orange-400/10 hover:scale-110'
+                          )}
+                        >
+                          <ChevronDown className="w-5 h-5 text-orange-400" />
+                        </button>
                       </div>
                     </div>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-xl font-bold text-white truncate mb-1">{song.title}</h3>
-                      <p className="text-gray-400 truncate">{song.artist} • {song.album}</p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => moveSong(song.id, 'up')} 
-                        disabled={index === 0} 
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200',
-                          'border border-white/10 hover:border-cyan-400/50',
-                          index === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-cyan-400/10 hover:scale-110'
-                        )}
-                      >
-                        <ChevronUp className="w-5 h-5 text-cyan-400" />
-                      </button>
-                      <button 
-                        onClick={() => moveSong(song.id, 'down')} 
-                        disabled={index === songs.length - 1} 
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200',
-                          'border border-white/10 hover:border-orange-400/50',
-                          index === songs.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-orange-400/10 hover:scale-110'
-                        )}
-                      >
-                        <ChevronDown className="w-5 h-5 text-orange-400" />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </div>
         </div>
