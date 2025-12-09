@@ -203,10 +203,10 @@ export const SongRankingSystem = ({
             </div>
           </div>
 
-          {/* Song Cards - Top 10 with controls */}
+          {/* Song Cards */}
           <div className="space-y-2">
             <AnimatePresence mode="popLayout">
-              {songs.slice(0, 10).map((song, index) => {
+              {songs.map((song, index) => {
                 const previewUrl = previewUrls.get(song.id);
                 const isPlaying = currentlyPlaying === song.id;
                 const hasPreview = !!previewUrl;
