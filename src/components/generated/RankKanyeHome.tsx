@@ -44,7 +44,7 @@ export const RankKanyeHome = ({
         }} className="mb-12 flex justify-center">
             <div className="relative w-64 h-96 md:w-80 md:h-[30rem] rounded-2xl overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-red-600/30 via-orange-500/30 to-pink-500/30 mix-blend-multiply" />
-              <img src="https://i.postimg.cc/VvFJtDYz/kanye.jpg" alt="Kanye West" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              <img src="/RankYeHome.jpg" alt="Kanye West" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute inset-0 border-2 border-red-500/30 rounded-2xl" />
             </div>
           </motion.div>
