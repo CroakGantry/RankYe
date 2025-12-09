@@ -4,7 +4,7 @@ import { ChevronUp, ChevronDown, ChevronLeft, Trophy, Play } from 'lucide-react'
 import { cn } from '../../lib/utils';
 import { kanyeSongs, type Song } from '../../data/kanye-music';
 import { useAudioPreview } from '../../hooks/use-audio-preview';
-import { fetchPreviewUrls } from '../../lib/itunes-api';
+// Preview URLs are pre-stored in data file - no runtime fetching needed
 
 const STORAGE_KEY = 'rankye-song-order-v2';
 
@@ -93,31 +93,8 @@ export const SongRankingSystem = ({
     }
   }, [songs]);
 
-  // Fetch missing preview URLs from iTunes (only for songs without pre-stored URLs)
-  useEffect(() => {
-    const songsWithoutPreviews = songs.filter(s => !s.previewUrl);
-    if (songsWithoutPreviews.length === 0) return;
-    
-    const loadPreviews = async () => {
-      setLoadingPreviews(true);
-      try {
-        const urls = await fetchPreviewUrls(
-          songsWithoutPreviews.map(s => ({ id: s.id, title: s.title, artist: s.artist, album: s.album }))
-        );
-        // Merge with existing URLs
-        setPreviewUrls(prev => {
-          const merged = new Map(prev);
-          urls.forEach((url, id) => merged.set(id, url));
-          return merged;
-        });
-      } catch (e) {
-        console.error('Failed to fetch previews:', e);
-      } finally {
-        setLoadingPreviews(false);
-      }
-    };
-    loadPreviews();
-  }, []);
+  // Note: We no longer fetch from iTunes API as fallback since it often returns incorrect results.
+  // All preview URLs are pre-stored in the data file for reliability.
 
   const moveSong = (songId: string, direction: 'up' | 'down') => {
     setSongs(prevSongs => {
@@ -259,7 +236,7 @@ export const SongRankingSystem = ({
                       <div 
                         className={cn(
                           "flex-shrink-0 relative cursor-pointer",
-                          !hasPreview && !loadingPreviews && "opacity-60 cursor-not-allowed"
+                          !hasPreview && !loadingPreviews && "cursor-not-allowed"
                         )}
                         onClick={() => hasPreview && toggle(song.id, previewUrl)}
                       >
