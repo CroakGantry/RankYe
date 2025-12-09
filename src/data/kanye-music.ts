@@ -20,6 +20,7 @@ export type Song = {
   artist: string;
   album: string;
   image: string;
+  previewUrl?: string;
   metrics: {
     lastWeek: number;
     peak: number;
