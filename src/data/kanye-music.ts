@@ -168,17 +168,18 @@ export const albums: Album[] = [
     title: 'Yeezus',
     year: 2013,
     artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/3c/56/e7/3c56e717-06a0-b67d-e694-9b6e6e43a5a8/13UAAIM08444.rgb.jpg/600x600bf-60.jpg',
+    // Note: Yeezus is not available on iTunes, so no preview URLs
     songs: [
       { title: 'On Sight', artists: ['Kanye West'] },
       { title: 'Black Skinhead', artists: ['Kanye West'] },
-      { title: 'I Am a God', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/00/92/b1/0092b198-5650-41c2-c5e7-5822487a20a9/mzaf_130702666960893818.plus.aac.p.m4a' },
+      { title: 'I Am a God', artists: ['Kanye West'] },
       { title: 'New Slaves', artists: ['Kanye West'] },
       { title: 'Hold My Liquor', artists: ['Kanye West'] },
       { title: "I'm in It", artists: ['Kanye West'] },
-      { title: 'Blood on the Leaves', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/15/31/3f/15313f3f-692a-c13b-7a78-159d76b238c3/mzaf_3983160890638646249.plus.aac.p.m4a' },
+      { title: 'Blood on the Leaves', artists: ['Kanye West'] },
       { title: 'Guilt Trip', artists: ['Kanye West'] },
       { title: 'Send It Up', artists: ['Kanye West'] },
-      { title: 'Bound 2', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview124/v4/f1/f4/c7/f1f4c7e8-ac7c-0e62-b8cb-a935205f6cb4/mzaf_10884101853220442890.plus.aac.p.m4a' },
+      { title: 'Bound 2', artists: ['Kanye West'] },
     ],
   },
   {
