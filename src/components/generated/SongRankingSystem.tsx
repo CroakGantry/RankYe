@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, ChevronDown, ChevronLeft, Trophy, Play } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -82,6 +82,11 @@ export const SongRankingSystem = ({
   });
   const [loadingPreviews, setLoadingPreviews] = useState(false);
   const { currentlyPlaying, isLoading: audioLoading, toggle } = useAudioPreview();
+  
+  // State for inline rank editing
+  const [editingRankId, setEditingRankId] = useState<string | null>(null);
+  const [editingRankValue, setEditingRankValue] = useState<string>('');
+  const rankInputRef = useRef<HTMLInputElement>(null);
 
   // Save to localStorage whenever songs order changes
   useEffect(() => {
@@ -111,6 +116,62 @@ export const SongRankingSystem = ({
         change: index < currentIndex ? 'down' as const : index > currentIndex ? 'up' as const : song.change
       }));
     });
+  };
+
+  // Move song to a specific position (insert and shift others down)
+  const moveSongToPosition = (songId: string, targetPosition: number) => {
+    setSongs(prevSongs => {
+      const currentIndex = prevSongs.findIndex(s => s.id === songId);
+      if (currentIndex === -1) return prevSongs;
+      
+      // Clamp target position to valid range
+      const targetIndex = Math.max(0, Math.min(targetPosition - 1, prevSongs.length - 1));
+      
+      // If same position, no change needed
+      if (currentIndex === targetIndex) return prevSongs;
+      
+      // Remove song from current position and insert at target
+      const newSongs = [...prevSongs];
+      const [movedSong] = newSongs.splice(currentIndex, 1);
+      newSongs.splice(targetIndex, 0, movedSong);
+      
+      // Update all ranks
+      return newSongs.map((song, index) => ({
+        ...song,
+        rank: index + 1
+      }));
+    });
+  };
+
+  // Handlers for rank editing
+  const startEditingRank = (songId: string, currentRank: number) => {
+    setEditingRankId(songId);
+    setEditingRankValue(currentRank.toString());
+    // Focus input after render
+    setTimeout(() => {
+      rankInputRef.current?.focus();
+      rankInputRef.current?.select();
+    }, 0);
+  };
+
+  const confirmRankEdit = () => {
+    if (editingRankId) {
+      const newPosition = parseInt(editingRankValue, 10);
+      if (!isNaN(newPosition) && newPosition >= 1 && newPosition <= songs.length) {
+        moveSongToPosition(editingRankId, newPosition);
+      }
+      setEditingRankId(null);
+      setEditingRankValue('');
+    }
+  };
+
+  const handleRankInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      confirmRankEdit();
+    } else if (e.key === 'Escape') {
+      setEditingRankId(null);
+      setEditingRankValue('');
+    }
   };
 
   // @return
@@ -220,16 +281,44 @@ export const SongRankingSystem = ({
                     )}
                   >
                     <div className="flex items-center gap-4 p-4">
-                      {/* Rank Number */}
+                      {/* Rank Number - Clickable to edit */}
                       <div className="flex-shrink-0 w-16 text-center">
-                        <motion.span 
-                          key={`rank-${song.rank}`} 
-                          initial={{ scale: 1.2, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-4xl font-black text-white"
-                        >
-                          {song.rank}
-                        </motion.span>
+                        {editingRankId === song.id ? (
+                          <input
+                            ref={rankInputRef}
+                            type="number"
+                            min={1}
+                            max={songs.length}
+                            value={editingRankValue}
+                            onChange={(e) => setEditingRankValue(e.target.value)}
+                            onBlur={confirmRankEdit}
+                            onKeyDown={handleRankInputKeyDown}
+                            className={cn(
+                              "w-14 h-12 text-center text-2xl font-black bg-white/10 text-white",
+                              "border-2 border-cyan-400 rounded-lg outline-none",
+                              "appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            )}
+                          />
+                        ) : (
+                          <motion.button
+                            key={`rank-${song.rank}`}
+                            initial={{ scale: 1.2, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditingRank(song.id, song.rank);
+                            }}
+                            className={cn(
+                              "text-4xl font-black text-white cursor-pointer",
+                              "hover:text-cyan-400 transition-colors duration-200",
+                              "hover:scale-110 active:scale-95 transition-transform",
+                              "rounded-lg px-1 hover:bg-white/5"
+                            )}
+                            title="Click to change rank"
+                          >
+                            {song.rank}
+                          </motion.button>
+                        )}
                       </div>
 
                       {/* Album Art with Play Button Overlay */}
