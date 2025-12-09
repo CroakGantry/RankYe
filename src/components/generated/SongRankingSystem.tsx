@@ -253,12 +253,9 @@ export const SongRankingSystem = ({
                         onClick={() => hasPreview && toggle(song.id, previewUrl)}
                       >
                         <div className="w-20 h-20 rounded-lg overflow-hidden relative">
-                          <div className={cn(
-                            "absolute inset-0 mix-blend-multiply transition-all duration-300",
-                            isPlaying 
-                              ? "bg-gradient-to-br from-cyan-500/50 via-blue-500/50 to-purple-500/50" 
-                              : "bg-gradient-to-br from-red-500/40 via-orange-500/40 to-pink-500/40"
-                          )} />
+                          {isPlaying && (
+                            <div className="absolute inset-0 mix-blend-multiply transition-all duration-300 bg-gradient-to-br from-cyan-500/50 via-blue-500/50 to-purple-500/50" />
+                          )}
                           <img src={song.image} alt={song.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
                           
                           {/* Play/Pause Overlay */}
