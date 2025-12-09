@@ -68,7 +68,7 @@ export const albums: Album[] = [
       { title: 'My Way Home', artists: ['Kanye West', 'Common'] },
       { title: 'Crack Music', artists: ['Kanye West', 'The Game'] },
       { title: 'Roses', artists: ['Kanye West'] },
-      { title: 'Bring Me Down', artists: ['Kanye West', 'Br', 'y'] },
+      { title: 'Bring Me Down (feat. Brandy)', artists: ['Kanye West'] },
       { title: 'Addiction', artists: ['Kanye West'] },
       { title: 'Diamonds from Sierra Leone (Remix)', artists: ['Kanye West', 'Jay-Z'] },
       { title: 'We Major', artists: ['Kanye West', 'Nas', 'Really Doe'] },
