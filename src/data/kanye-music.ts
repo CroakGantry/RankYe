@@ -261,7 +261,7 @@ export const albums: Album[] = [
     id: 'donda',
     title: 'Donda',
     year: 2021,
-    artworkUrl: 'https://www.rowsignsandgraphics.com/wp-content/uploads/2021/08/Inset_Black_Square.jpg',
+    artworkUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Crect width='600' height='600' fill='%23000'/%3E%3C/svg%3E",
     songs: [
       { title: 'Donda Chant', artists: ['Kanye West'] },
       { title: 'Jail', artists: ['Kanye West', 'Jay-Z'] },
