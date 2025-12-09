@@ -286,17 +286,17 @@ export const SongRankingSystem = ({
                         {editingRankId === song.id ? (
                           <input
                             ref={rankInputRef}
-                            type="number"
-                            min={1}
-                            max={songs.length}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            autoFocus
                             value={editingRankValue}
-                            onChange={(e) => setEditingRankValue(e.target.value)}
+                            onChange={(e) => setEditingRankValue(e.target.value.replace(/[^0-9]/g, ''))}
                             onBlur={confirmRankEdit}
                             onKeyDown={handleRankInputKeyDown}
                             className={cn(
                               "w-14 h-12 text-center text-2xl font-black bg-white/10 text-white",
-                              "border-2 border-cyan-400 rounded-lg outline-none",
-                              "appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                              "border-2 border-cyan-400 rounded-lg outline-none"
                             )}
                           />
                         ) : (
