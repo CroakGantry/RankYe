@@ -33,21 +33,11 @@ export async function fetchPreviewUrl(
   }
 
   try {
-    // Strip featured artist info from title for cleaner search
-    // e.g., "Bring Me Down (feat. Brandy)" -> "Bring Me Down"
-    const cleanTitle = songTitle
-      .replace(/\s*\(feat\.[^)]*\)/gi, '')
-      .replace(/\s*\(ft\.[^)]*\)/gi, '')
-      .replace(/\s*feat\.[^,]*/gi, '')
-      .replace(/\s*ft\.[^,]*/gi, '')
-      .trim();
-    
-    // Use just song title + album for more accurate matching
-    // Artist filtering happens later in the results
+    // Include album name for more accurate matching
     const searchTerm = encodeURIComponent(
       albumName 
-        ? `${cleanTitle} ${albumName}`
-        : `${cleanTitle} ${artistName}`
+        ? `${songTitle} ${artistName} ${albumName}`
+        : `${songTitle} ${artistName}`
     );
     const response = await fetch(
       `https://itunes.apple.com/search?term=${searchTerm}&entity=song&limit=10`

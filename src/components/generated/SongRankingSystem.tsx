@@ -70,8 +70,17 @@ export const SongRankingSystem = ({
   onBack
 }: SongRankingSystemProps) => {
   const [songs, setSongs] = useState<Song[]>(() => loadSavedOrder(initialSongs));
-  const [previewUrls, setPreviewUrls] = useState<Map<string, string>>(new Map());
-  const [loadingPreviews, setLoadingPreviews] = useState(true);
+  const [previewUrls, setPreviewUrls] = useState<Map<string, string>>(() => {
+    // Initialize with pre-stored preview URLs from data
+    const map = new Map<string, string>();
+    initialSongs.forEach(song => {
+      if (song.previewUrl) {
+        map.set(song.id, song.previewUrl);
+      }
+    });
+    return map;
+  });
+  const [loadingPreviews, setLoadingPreviews] = useState(false);
   const { currentlyPlaying, isLoading: audioLoading, toggle } = useAudioPreview();
 
   // Save to localStorage whenever songs order changes
@@ -84,15 +93,23 @@ export const SongRankingSystem = ({
     }
   }, [songs]);
 
-  // Fetch preview URLs from iTunes on mount
+  // Fetch missing preview URLs from iTunes (only for songs without pre-stored URLs)
   useEffect(() => {
+    const songsWithoutPreviews = songs.filter(s => !s.previewUrl);
+    if (songsWithoutPreviews.length === 0) return;
+    
     const loadPreviews = async () => {
       setLoadingPreviews(true);
       try {
         const urls = await fetchPreviewUrls(
-          songs.map(s => ({ id: s.id, title: s.title, artist: s.artist, album: s.album }))
+          songsWithoutPreviews.map(s => ({ id: s.id, title: s.title, artist: s.artist, album: s.album }))
         );
-        setPreviewUrls(urls);
+        // Merge with existing URLs
+        setPreviewUrls(prev => {
+          const merged = new Map(prev);
+          urls.forEach((url, id) => merged.set(id, url));
+          return merged;
+        });
       } catch (e) {
         console.error('Failed to fetch previews:', e);
       } finally {
