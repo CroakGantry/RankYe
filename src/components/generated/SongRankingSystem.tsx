@@ -6,7 +6,7 @@ import { kanyeSongs, type Song } from '../../data/kanye-music';
 import { useAudioPreview } from '../../hooks/use-audio-preview';
 import { fetchPreviewUrls } from '../../lib/itunes-api';
 
-const STORAGE_KEY = 'rankye-song-order';
+const STORAGE_KEY = 'rankye-song-order-v2';
 
 type SongRankingSystemProps = {
   initialSongs?: Song[];

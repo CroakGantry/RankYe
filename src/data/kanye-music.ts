@@ -146,7 +146,7 @@ export const albums: Album[] = [
     id: 'watch-the-throne',
     title: 'Watch the Throne',
     year: 2011,
-    artworkUrl: 'https://www.rollingstone.com/wp-content/uploads/2018/06/rs-26975-rectangle.jpg?w=386&h=254&crop=1',
+    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/b1/d0/32/b1d03292-7f4e-2304-df0f-1a690d44c6cc/11UMGIM20800.rgb.jpg/600x600bf-60.jpg',
     songs: [
       { title: 'No Church in the Wild', artists: ['Jay-Z', 'Kanye West', 'Frank Ocean', 'The-Dream'] },
       { title: 'Lift Off', artists: ['Jay-Z', 'Kanye West', 'Beyoncé'] },
