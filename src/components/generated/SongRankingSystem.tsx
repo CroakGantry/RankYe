@@ -1,133 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, ChevronDown, ChevronLeft, Trophy } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { kanyeSongs, type Song } from '../../data/kanye-music';
 
 const STORAGE_KEY = 'rankye-song-order';
-type SongMetrics = {
-  lastWeek: number;
-  peak: number;
-  weeks: number;
-};
-type Song = {
-  id: string;
-  rank: number;
-  title: string;
-  artist: string;
-  album: string;
-  image: string;
-  metrics: SongMetrics;
-  change: 'up' | 'down' | 'same';
-};
+
 type SongRankingSystemProps = {
   initialSongs?: Song[];
   onBack?: () => void;
 };
-const defaultSongs: Song[] = [{
-  id: '1',
-  rank: 1,
-  title: 'Paint The Town Red',
-  artist: 'Doja Cat',
-  album: 'Scarlet',
-  image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 2,
-    peak: 1,
-    weeks: 18
-  },
-  change: 'up'
-}, {
-  id: '2',
-  rank: 2,
-  title: "I'm The Problem",
-  artist: 'Morgan Wallen',
-  album: 'One Thing At A Time',
-  image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 4,
-    peak: 1,
-    weeks: 29
-  },
-  change: 'up'
-}, {
-  id: '3',
-  rank: 3,
-  title: 'Cruel Summer',
-  artist: 'Taylor Swift',
-  album: 'Lover',
-  image: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 1,
-    peak: 1,
-    weeks: 52
-  },
-  change: 'down'
-}, {
-  id: '4',
-  rank: 4,
-  title: 'Snooze',
-  artist: 'SZA',
-  album: 'SOS',
-  image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 3,
-    peak: 2,
-    weeks: 35
-  },
-  change: 'down'
-}, {
-  id: '5',
-  rank: 5,
-  title: 'Strangers',
-  artist: 'Kenya Grace',
-  album: 'Strangers - Single',
-  image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 7,
-    peak: 5,
-    weeks: 12
-  },
-  change: 'up'
-}, {
-  id: '6',
-  rank: 6,
-  title: 'vampire',
-  artist: 'Olivia Rodrigo',
-  album: 'GUTS',
-  image: 'https://images.unsplash.com/photo-1619983081563-430f63602796?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 5,
-    peak: 1,
-    weeks: 16
-  },
-  change: 'down'
-}, {
-  id: '7',
-  rank: 7,
-  title: 'greedy',
-  artist: 'Tate McRae',
-  album: 'THINK LATER',
-  image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 9,
-    peak: 7,
-    weeks: 8
-  },
-  change: 'up'
-}, {
-  id: '8',
-  rank: 8,
-  title: 'Rich Baby Daddy',
-  artist: 'Drake ft. Sexyy Red',
-  album: 'For All The Dogs',
-  image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
-  metrics: {
-    lastWeek: 6,
-    peak: 4,
-    weeks: 22
-  },
-  change: 'down'
-}];
+
+const defaultSongs: Song[] = kanyeSongs;
 
 // Helper to load saved order from localStorage
 const loadSavedOrder = (defaultSongList: Song[]): Song[] => {
