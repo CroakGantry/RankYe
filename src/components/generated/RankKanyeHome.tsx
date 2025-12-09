@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { albums } from '../../data/kanye-music';
 
@@ -10,6 +10,7 @@ export const RankKanyeHome = ({
   onProceed
 }: RankKanyeHomeProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Collect all songs with preview URLs
   const songsWithPreviews = useMemo(() => {
@@ -28,9 +29,25 @@ export const RankKanyeHome = ({
     return songs;
   }, []);
 
-  // Play a random preview on mount
+  // Cleanup audio on unmount
   useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+    };
+  }, []);
+
+  // Play a random song
+  const playRandomSong = useCallback(() => {
     if (songsWithPreviews.length === 0) return;
+
+    // Stop current audio if playing
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
 
     const randomIndex = Math.floor(Math.random() * songsWithPreviews.length);
     const randomSong = songsWithPreviews[randomIndex];
@@ -39,26 +56,35 @@ export const RankKanyeHome = ({
     audio.volume = 0.3;
     audioRef.current = audio;
 
-    // Play with a small delay for smoother UX
-    const playTimeout = setTimeout(() => {
-      audio.play().catch(() => {
-        // Autoplay might be blocked - that's okay
-      });
-    }, 800);
+    audio.addEventListener('ended', () => setIsPlaying(false));
 
-    return () => {
-      clearTimeout(playTimeout);
-      audio.pause();
-      audio.src = '';
-    };
+    audio.play()
+      .then(() => setIsPlaying(true))
+      .catch(() => setIsPlaying(false));
   }, [songsWithPreviews]);
 
-  // Stop audio when proceeding
-  const handleProceed = () => {
+  // Stop audio
+  const stopAudio = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = '';
+      setIsPlaying(false);
     }
+  }, []);
+
+  // Handle single click - play random song
+  const handleClick = useCallback(() => {
+    playRandomSong();
+  }, [playRandomSong]);
+
+  // Handle double click - stop audio
+  const handleDoubleClick = useCallback(() => {
+    stopAudio();
+  }, [stopAudio]);
+
+  // Stop audio when proceeding
+  const handleProceed = () => {
+    stopAudio();
     onProceed();
   };
 
@@ -83,9 +109,62 @@ export const RankKanyeHome = ({
         }} transition={{
           delay: 0.2,
           duration: 0.6
-        }} className="text-6xl md:text-8xl font-black text-white mb-12 bg-gradient-to-r from-red-500 via-orange-500 to-pink-500 bg-clip-text text-transparent">
+        }} className="text-6xl md:text-8xl font-black text-white mb-8 bg-gradient-to-r from-red-500 via-orange-500 to-pink-500 bg-clip-text text-transparent">
             RankYe
           </motion.h1>
+
+          {/* Music Controls */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mb-8 flex items-center justify-center gap-3"
+          >
+            {/* Play / Next button */}
+            <button
+              onClick={handleClick}
+              className="relative group"
+              title={isPlaying ? "Play next sample" : "Play a sample"}
+            >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-r from-red-700 via-orange-600 to-red-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-red-500/40">
+                {isPlaying ? (
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 4v16l10-8L6 4z" />
+                    <rect x="17" y="4" width="3" height="16" rx="1" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </div>
+              {isPlaying && (
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2 border-red-500/50"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+              )}
+            </button>
+
+            {/* Pause button - only shown when playing */}
+            {isPlaying && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                onClick={stopAudio}
+                className="relative group"
+                title="Stop"
+              >
+                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-red-700 via-orange-600 to-red-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-red-500/40">
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" rx="1" />
+                  </svg>
+                </div>
+              </motion.button>
+            )}
+          </motion.div>
 
           {/* Kanye Image */}
           <motion.div initial={{
