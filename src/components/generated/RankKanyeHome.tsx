@@ -1,11 +1,67 @@
-import React from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { albums } from '../../data/kanye-music';
+
 type RankKanyeHomeProps = {
   onProceed: () => void;
 };
+
 export const RankKanyeHome = ({
   onProceed
 }: RankKanyeHomeProps) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Collect all songs with preview URLs
+  const songsWithPreviews = useMemo(() => {
+    const songs: { title: string; previewUrl: string; album: string }[] = [];
+    albums.forEach((album) => {
+      album.songs.forEach((song) => {
+        if (song.previewUrl) {
+          songs.push({
+            title: song.title,
+            previewUrl: song.previewUrl,
+            album: album.title,
+          });
+        }
+      });
+    });
+    return songs;
+  }, []);
+
+  // Play a random preview on mount
+  useEffect(() => {
+    if (songsWithPreviews.length === 0) return;
+
+    const randomIndex = Math.floor(Math.random() * songsWithPreviews.length);
+    const randomSong = songsWithPreviews[randomIndex];
+
+    const audio = new Audio(randomSong.previewUrl);
+    audio.volume = 0.3;
+    audioRef.current = audio;
+
+    // Play with a small delay for smoother UX
+    const playTimeout = setTimeout(() => {
+      audio.play().catch(() => {
+        // Autoplay might be blocked - that's okay
+      });
+    }, 800);
+
+    return () => {
+      clearTimeout(playTimeout);
+      audio.pause();
+      audio.src = '';
+    };
+  }, [songsWithPreviews]);
+
+  // Stop audio when proceeding
+  const handleProceed = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+    onProceed();
+  };
+
   return <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4">
       <div className="max-w-2xl w-full">
         <motion.div initial={{
@@ -59,7 +115,7 @@ export const RankKanyeHome = ({
         }} transition={{
           delay: 0.6,
           duration: 0.6
-        }} onClick={onProceed} className="group relative px-12 py-5 text-xl font-bold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/30">
+        }} onClick={handleProceed} className="group relative px-12 py-5 text-xl font-bold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/30">
             {/* Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-r from-red-700 via-orange-600 to-red-500 transition-all duration-300 group-hover:scale-110" />
             
