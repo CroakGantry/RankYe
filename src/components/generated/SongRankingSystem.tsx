@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, ChevronLeft, Trophy, Play, Pause, Volume2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, Trophy, Play } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { kanyeSongs, type Song } from '../../data/kanye-music';
 import { useAudioPreview } from '../../hooks/use-audio-preview';
@@ -90,7 +90,7 @@ export const SongRankingSystem = ({
       setLoadingPreviews(true);
       try {
         const urls = await fetchPreviewUrls(
-          songs.map(s => ({ id: s.id, title: s.title, artist: s.artist }))
+          songs.map(s => ({ id: s.id, title: s.title, artist: s.artist, album: s.album }))
         );
         setPreviewUrls(urls);
       } catch (e) {
@@ -297,12 +297,7 @@ export const SongRankingSystem = ({
                         )}
                         onClick={() => hasPreview && toggle(song.id, previewUrl)}
                       >
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-xl font-bold text-white truncate">{song.title}</h3>
-                          {isPlaying && (
-                            <Volume2 className="w-4 h-4 text-cyan-400 flex-shrink-0 animate-pulse" />
-                          )}
-                        </div>
+                        <h3 className="text-xl font-bold text-white truncate mb-1">{song.title}</h3>
                         <p className="text-gray-400 truncate">{song.artist} • {song.album}</p>
                         {!hasPreview && !loadingPreviews && (
                           <p className="text-gray-600 text-xs mt-1">Preview not available</p>
