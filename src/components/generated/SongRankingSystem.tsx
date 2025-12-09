@@ -157,10 +157,7 @@ export const SongRankingSystem = ({
                     <p className="text-xl font-bold text-white mb-1">{songs[0].title}</p>
                     <p className="text-gray-400 text-sm">{songs[0].artist}</p>
                     <div className="mt-4 w-20 h-20 rounded-lg overflow-hidden">
-                      <div className="relative w-full h-full">
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/40 via-amber-500/40 to-orange-500/40 mix-blend-multiply" />
-                        <img src={songs[0].image} alt={songs[0].title} className="w-full h-full object-cover" crossOrigin="anonymous" />
-                      </div>
+                      <img src={songs[0].image} alt={songs[0].title} className="w-full h-full object-cover" crossOrigin="anonymous" />
                     </div>
                   </>}
                 </div>
@@ -189,10 +186,7 @@ export const SongRankingSystem = ({
                         <p className="text-xl font-bold text-white mb-1">{albumName}</p>
                         <p className="text-gray-400 text-sm">{count} song{count > 1 ? 's' : ''} in Top 10</p>
                         {albumSong && <div className="mt-4 w-20 h-20 rounded-lg overflow-hidden">
-                          <div className="relative w-full h-full">
-                            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/40 via-amber-500/40 to-orange-500/40 mix-blend-multiply" />
-                            <img src={albumSong.image} alt={albumName} className="w-full h-full object-cover" crossOrigin="anonymous" />
-                          </div>
+                          <img src={albumSong.image} alt={albumName} className="w-full h-full object-cover" crossOrigin="anonymous" />
                         </div>}
                       </>;
                     }
