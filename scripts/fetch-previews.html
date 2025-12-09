@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iTunes Preview URL Fetcher</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a; 
+      color: #fff; 
+      padding: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1 { color: #f59e0b; }
+    .progress { 
+      background: #333; 
+      padding: 15px; 
+      border-radius: 8px; 
+      margin: 20px 0;
+    }
+    .progress-bar {
+      background: #333;
+      border-radius: 4px;
+      height: 20px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      height: 100%;
+      transition: width 0.3s;
+    }
+    .stats { display: flex; gap: 20px; margin: 10px 0; }
+    .stat { background: #333; padding: 10px 15px; border-radius: 6px; }
+    .stat-value { font-size: 24px; font-weight: bold; color: #f59e0b; }
+    button {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px 5px 10px 0;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #log {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+    #output {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 11px;
+      white-space: pre;
+    }
+    .success { color: #22c55e; }
+    .error { color: #ef4444; }
+    .album-header { color: #f59e0b; font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🎵 iTunes Preview URL Fetcher</h1>
+  <p>This tool fetches preview URLs from iTunes for all Kanye West songs. Open this file in your browser and click Start.</p>
+  
+  <div class="progress">
+    <div>Progress: <span id="current">0</span> / <span id="total">166</span></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="foundCount">0</div>
+        <div>Found</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="notFoundCount">0</div>
+        <div>Not Found</div>
+      </div>
+    </div>
+  </div>
+  
+  <button id="startBtn" onclick="startFetching()">▶️ Start Fetching</button>
+  <button id="copyBtn" onclick="copyOutput()" disabled>📋 Copy Output</button>
+  
+  <h3>Log:</h3>
+  <div id="log"></div>
+  
+  <h3>Output (copy this to kanye-music.ts):</h3>
+  <div id="output"></div>
+
+  <script>
+const albums = [
+  {
+    id: 'the-college-dropout',
+    title: 'The College Dropout',
+    songs: [
+      { title: "We Don't Care", artists: ['Kanye West'] },
+      { title: 'Graduation Day', artists: ['Kanye West'] },
+      { title: 'All Falls Down', artists: ['Kanye West', 'Syleena Johnson'] },
+      { title: "I'll Fly Away", artists: ['Kanye West'] },
+      { title: 'Spaceship', artists: ['Kanye West', 'GLC', 'Consequence'] },
+      { title: 'Jesus Walks', artists: ['Kanye West'] },
+      { title: 'Never Let Me Down', artists: ['Kanye West', 'Jay-Z', 'J. Ivy'] },
+      { title: 'Get Em High', artists: ['Kanye West', 'Talib Kweli', 'Common'] },
+      { title: 'The New Workout Plan', artists: ['Kanye West'] },
+      { title: 'Slow Jamz', artists: ['Kanye West', 'Twista', 'Jamie Foxx'] },
+      { title: 'Breathe In Breathe Out', artists: ['Kanye West', 'Ludacris'] },
+      { title: 'School Spirit', artists: ['Kanye West'] },
+      { title: 'Two Words', artists: ['Kanye West', 'Mos Def', 'Freeway', 'The Boys Choir of Harlem'] },
+      { title: 'Through the Wire', artists: ['Kanye West'] },
+      { title: 'Family Business', artists: ['Kanye West'] },
+      { title: 'Last Call', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: 'late-registration',
+    title: 'Late Registration',
+    songs: [
+      { title: 'Wake Up Mr. West', artists: ['Kanye West'] },
+      { title: "Heard 'Em Say", artists: ['Kanye West', 'Adam Levine'] },
+      { title: 'Touch the Sky', artists: ['Kanye West', 'Lupe Fiasco'] },
+      { title: 'Gold Digger', artists: ['Kanye West', 'Jamie Foxx'] },
+      { title: 'Drive Slow', artists: ['Kanye West', 'Paul Wall', 'GLC'] },
+      { title: 'My Way Home', artists: ['Kanye West', 'Common'] },
+      { title: 'Crack Music', artists: ['Kanye West', 'The Game'] },
+      { title: 'Roses', artists: ['Kanye West'] },
+      { title: 'Bring Me Down (feat. Brandy)', artists: ['Kanye West'] },
+      { title: 'Addiction', artists: ['Kanye West'] },
+      { title: 'Diamonds from Sierra Leone (Remix)', artists: ['Kanye West', 'Jay-Z'] },
+      { title: 'We Major', artists: ['Kanye West', 'Nas', 'Really Doe'] },
+      { title: 'Hey Mama', artists: ['Kanye West'] },
+      { title: 'Celebration', artists: ['Kanye West'] },
+      { title: 'Gone', artists: ['Kanye West', 'Consequence', "Cam'ron"] },
+      { title: 'Diamonds from Sierra Leone (bonus track)', artists: ['Kanye West'] },
+      { title: 'Late', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: 'graduation',
+    title: 'Graduation',
+    songs: [
+      { title: 'Good Morning', artists: ['Kanye West'] },
+      { title: 'Champion', artists: ['Kanye West'] },
+      { title: 'Stronger', artists: ['Kanye West'] },
+      { title: 'I Wonder', artists: ['Kanye West'] },
+      { title: 'Good Life', artists: ['Kanye West', 'T-Pain'] },
+      { title: "Can't Tell Me Nothing", artists: ['Kanye West'] },
+      { title: 'Barry Bonds', artists: ['Kanye West', 'Lil Wayne'] },
+      { title: 'Drunk and Hot Girls', artists: ['Kanye West', 'Mos Def'] },
+      { title: 'Flashing Lights', artists: ['Kanye West', 'Dwele'] },
+      { title: 'Everything I Am', artists: ['Kanye West', 'scratches by DJ Premier'] },
+      { title: 'The Glory', artists: ['Kanye West'] },
+      { title: 'Homecoming', artists: ['Kanye West', 'Chris Martin'] },
+      { title: 'Big Brother', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: '808s-heartbreak',
+    title: '808s & Heartbreak',
+    songs: [
+      { title: 'Say You Will', artists: ['Kanye West'] },
+      { title: 'Welcome To Heartbreak', artists: ['Kanye West', 'Kid Cudi'] },
+      { title: 'Heartless', artists: ['Kanye West'] },
+      { title: 'Amazing', artists: ['Kanye West', 'Jeezy'] },
+      { title: 'Love Lockdown', artists: ['Kanye West'] },
+      { title: 'Paranoid', artists: ['Kanye West', 'Mr Hudson'] },
+      { title: 'RoboCop', artists: ['Kanye West'] },
+      { title: 'Street Lights', artists: ['Kanye West'] },
+      { title: 'Bad News', artists: ['Kanye West'] },
+      { title: 'See You In My Nightmares', artists: ['Kanye West', 'Lil Wayne'] },
+      { title: 'Coldest Winter', artists: ['Kanye West'] },
+      { title: 'Pinocchio Story', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: 'my-beautiful-dark-twisted-fantasy',
+    title: 'My Beautiful Dark Twisted Fantasy',
+    songs: [
+      { title: 'Dark Fantasy', artists: ['Kanye West'] },
+      { title: 'Gorgeous', artists: ['Kanye West', 'Kid Cudi', 'Raekwon'] },
+      { title: 'Power', artists: ['Kanye West'] },
+      { title: 'All of the Lights (Interlude)', artists: ['Kanye West'] },
+      { title: 'All of the Lights', artists: ['Kanye West'] },
+      { title: 'Monster', artists: ['Kanye West', 'Jay-Z', 'Rick Ross', 'Nicki Minaj', 'Bon Iver'] },
+      { title: 'So Appalled', artists: ['Kanye West', 'Swizz Beatz', 'Jay-Z', 'Pusha T', 'Cyhi the Prynce', 'RZA'] },
+      { title: 'Devil in a New Dress', artists: ['Kanye West', 'Rick Ross'] },
+      { title: 'Runaway', artists: ['Kanye West', 'Pusha T'] },
+      { title: 'Hell of a Life', artists: ['Kanye West'] },
+      { title: 'Blame Game', artists: ['Kanye West', 'John Legend'] },
+      { title: 'Lost in the World', artists: ['Kanye West', 'Bon Iver'] },
+      { title: 'Who Will Survive in America', artists: ['Kanye West'] },
+      { title: 'See Me Now', artists: ['Kanye West', 'Beyoncé', 'Charlie Wilson', 'Big Sean'] },
+    ],
+  },
+  {
+    id: 'watch-the-throne',
+    title: 'Watch the Throne',
+    songs: [
+      { title: 'No Church in the Wild', artists: ['Jay-Z', 'Kanye West', 'Frank Ocean', 'The-Dream'] },
+      { title: 'Lift Off', artists: ['Jay-Z', 'Kanye West', 'Beyoncé'] },
+      { title: 'Niggas in Paris', artists: ['Jay-Z', 'Kanye West'] },
+      { title: 'Otis', artists: ['Jay-Z', 'Kanye West', 'Otis Redding'] },
+      { title: 'Gotta Have It', artists: ['Jay-Z', 'Kanye West'] },
+      { title: 'New Day', artists: ['Jay-Z', 'Kanye West'] },
+      { title: "That's My Bitch", artists: ['Jay-Z', 'Kanye West'] },
+      { title: 'Welcome to the Jungle', artists: ['Jay-Z', 'Kanye West'] },
+      { title: 'Who Gon Stop Me', artists: ['Jay-Z', 'Kanye West'] },
+      { title: 'Murder to Excellence', artists: ['Jay-Z', 'Kanye West'] },
+      { title: 'Made in America', artists: ['Jay-Z', 'Kanye West', 'Frank Ocean'] },
+      { title: 'Why I Love You', artists: ['Jay-Z', 'Kanye West', 'Mr Hudson'] },
+    ],
+  },
+  {
+    id: 'yeezus',
+    title: 'Yeezus',
+    songs: [
+      { title: 'On Sight', artists: ['Kanye West'] },
+      { title: 'Black Skinhead', artists: ['Kanye West'] },
+      { title: 'I Am a God', artists: ['Kanye West'] },
+      { title: 'New Slaves', artists: ['Kanye West'] },
+      { title: 'Hold My Liquor', artists: ['Kanye West'] },
+      { title: "I'm in It", artists: ['Kanye West'] },
+      { title: 'Blood on the Leaves', artists: ['Kanye West'] },
+      { title: 'Guilt Trip', artists: ['Kanye West'] },
+      { title: 'Send It Up', artists: ['Kanye West'] },
+      { title: 'Bound 2', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: 'the-life-of-pablo',
+    title: 'The Life of Pablo',
+    songs: [
+      { title: 'Ultralight Beam', artists: ['Kanye West'] },
+      { title: 'Father Stretch My Hands, Pt. 1', artists: ['Kanye West'] },
+      { title: 'Pt. 2', artists: ['Kanye West'] },
+      { title: 'Famous', artists: ['Kanye West'] },
+      { title: 'Feedback', artists: ['Kanye West'] },
+      { title: 'Low Lights', artists: ['Kanye West'] },
+      { title: 'Highlights', artists: ['Kanye West'] },
+      { title: 'Freestyle 4', artists: ['Kanye West'] },
+      { title: 'I Love Kanye', artists: ['Kanye West'] },
+      { title: 'Waves', artists: ['Kanye West'] },
+      { title: 'FML', artists: ['Kanye West'] },
+      { title: 'Real Friends', artists: ['Kanye West'] },
+      { title: 'Wolves', artists: ['Kanye West'] },
+      { title: "Frank's Track", artists: ['Kanye West'] },
+      { title: 'Siiiiiiiiilver Surffffeeeeer Intermission', artists: ['Kanye West'] },
+      { title: '30 Hours', artists: ['Kanye West'] },
+      { title: 'No More Parties in LA', artists: ['Kanye West'] },
+      { title: 'Facts (Charlie Heat version)', artists: ['Kanye West'] },
+      { title: 'Fade', artists: ['Kanye West'] },
+      { title: 'Saint Pablo', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: 'ye',
+    title: 'Ye',
+    songs: [
+      { title: 'I Thought About Killing You', artists: ['Kanye West'] },
+      { title: 'Yikes', artists: ['Kanye West'] },
+      { title: 'All Mine', artists: ['Kanye West'] },
+      { title: "Wouldn't Leave", artists: ['Kanye West'] },
+      { title: 'No Mistakes', artists: ['Kanye West'] },
+      { title: 'Ghost Town', artists: ['Kanye West'] },
+      { title: 'Violent Crimes', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: 'kids-see-ghosts',
+    title: 'Kids See Ghosts',
+    songs: [
+      { title: 'Feel the Love', artists: ['Kid Cudi', 'Kanye West'] },
+      { title: 'Fire', artists: ['Kid Cudi', 'Kanye West'] },
+      { title: '4th Dimension', artists: ['Kid Cudi', 'Kanye West'] },
+      { title: 'Freeee (Ghost Town, Pt. 2)', artists: ['Kid Cudi', 'Kanye West'] },
+      { title: 'Reborn', artists: ['Kid Cudi', 'Kanye West'] },
+      { title: 'Kids See Ghosts', artists: ['Kid Cudi', 'Kanye West'] },
+      { title: 'Cudi Montage', artists: ['Kid Cudi', 'Kanye West'] },
+    ],
+  },
+  {
+    id: 'jesus-is-king',
+    title: 'Jesus Is King',
+    songs: [
+      { title: 'Every Hour', artists: ['Kanye West'] },
+      { title: 'Selah', artists: ['Kanye West'] },
+      { title: 'Follow God', artists: ['Kanye West'] },
+      { title: 'Closed on Sunday', artists: ['Kanye West'] },
+      { title: 'On God', artists: ['Kanye West'] },
+      { title: 'Everything We Need', artists: ['Kanye West'] },
+      { title: 'Water', artists: ['Kanye West'] },
+      { title: 'God Is', artists: ['Kanye West'] },
+      { title: 'Hands On', artists: ['Kanye West'] },
+      { title: 'Use This Gospel', artists: ['Kanye West'] },
+      { title: 'Jesus Is Lord', artists: ['Kanye West'] },
+    ],
+  },
+  {
+    id: 'donda',
+    title: 'Donda',
+    songs: [
+      { title: 'Donda Chant', artists: ['Kanye West'] },
+      { title: 'Jail', artists: ['Kanye West'] },
+      { title: 'God Breathed', artists: ['Kanye West'] },
+      { title: 'Off the Grid', artists: ['Kanye West'] },
+      { title: 'Hurricane', artists: ['Kanye West'] },
+      { title: 'Praise God', artists: ['Kanye West'] },
+      { title: 'Jonah', artists: ['Kanye West'] },
+      { title: 'Ok Ok', artists: ['Kanye West'] },
+      { title: 'Junya', artists: ['Kanye West'] },
+      { title: 'Believe What I Say', artists: ['Kanye West'] },
+      { title: '24', artists: ['Kanye West'] },
+      { title: 'Remote Control', artists: ['Kanye West'] },
+      { title: 'Moon', artists: ['Kanye West'] },
+      { title: 'Heaven and Hell', artists: ['Kanye West'] },
+      { title: 'Donda', artists: ['Kanye West'] },
+      { title: 'Keep My Spirit Alive', artists: ['Kanye West'] },
+      { title: 'Jesus Lord', artists: ['Kanye West'] },
+      { title: 'New Again', artists: ['Kanye West'] },
+      { title: 'Tell the Vision', artists: ['Kanye West'] },
+      { title: 'Lord I Need You', artists: ['Kanye West'] },
+      { title: 'Pure Souls', artists: ['Kanye West'] },
+      { title: 'Come to Life', artists: ['Kanye West'] },
+      { title: 'No Child Left Behind', artists: ['Kanye West'] },
+      { title: 'Jail pt 2', artists: ['Kanye West'] },
+      { title: 'Ok Ok pt 2', artists: ['Kanye West'] },
+      { title: 'Junya pt 2', artists: ['Kanye West'] },
+      { title: 'Jesus Lord pt 2', artists: ['Kanye West'] },
+    ],
+  },
+];
+
+let found = 0;
+let notFound = 0;
+let current = 0;
+let total = albums.reduce((acc, a) => acc + a.songs.length, 0);
+let results = [];
+let isRunning = false;
+
+function log(msg, type = '') {
+  const logEl = document.getElementById('log');
+  const span = document.createElement('span');
+  span.className = type;
+  span.textContent = msg + '\n';
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function updateProgress() {
+  document.getElementById('current').textContent = current;
+  document.getElementById('total').textContent = total;
+  document.getElementById('foundCount').textContent = found;
+  document.getElementById('notFoundCount').textContent = notFound;
+  document.getElementById('progressFill').style.width = `${(current / total) * 100}%`;
+}
+
+function cleanTitle(title) {
+  return title
+    .replace(/\s*\(feat\.[^)]*\)/gi, '')
+    .replace(/\s*\(ft\.[^)]*\)/gi, '')
+    .replace(/\s*feat\.[^,]*/gi, '')
+    .replace(/\s*ft\.[^,]*/gi, '')
+    .trim();
+}
+
+async function fetchPreviewUrl(songTitle, albumName) {
+  const cleanedTitle = cleanTitle(songTitle);
+  const searchTerm = encodeURIComponent(`${cleanedTitle} ${albumName} Kanye`);
+  
+  try {
+    const response = await fetch(
+      `https://itunes.apple.com/search?term=${searchTerm}&entity=song&limit=15`
+    );
+    
+    if (!response.ok) {
+      return { error: `API error: ${response.status}` };
+    }
+
+    const data = await response.json();
+    
+    if (data.resultCount === 0) {
+      return { error: 'No results' };
+    }
+
+    const kanyeResults = data.results.filter(r => 
+      r.artistName.toLowerCase().includes('kanye') ||
+      r.artistName.toLowerCase().includes('kid cudi')
+    );
+    
+    if (kanyeResults.length === 0) {
+      return { error: 'No Kanye results' };
+    }
+
+    const normalizedTitle = cleanedTitle.toLowerCase();
+    const normalizedAlbum = albumName.toLowerCase();
+    
+    const scoredResults = kanyeResults.map(result => {
+      let score = 0;
+      const resultTitle = result.trackName.toLowerCase().replace(/['']/g, "'");
+      const resultAlbum = result.collectionName.toLowerCase();
+      
+      if (resultTitle === normalizedTitle) score += 100;
+      else if (resultTitle.includes(normalizedTitle) || normalizedTitle.includes(resultTitle.split('(')[0].trim())) score += 60;
+      
+      if (resultAlbum.includes(normalizedAlbum) || normalizedAlbum.includes(resultAlbum.split('(')[0].trim())) {
+        score += 50;
+      }
+      
+      return { result, score };
+    });
+    
+    scoredResults.sort((a, b) => b.score - a.score);
+    
+    const bestMatch = scoredResults[0];
+    if (bestMatch && bestMatch.score >= 50 && bestMatch.result.previewUrl) {
+      return { url: bestMatch.result.previewUrl };
+    }
+    
+    return { error: `Low score: ${bestMatch?.score || 0}` };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
+function generateOutput() {
+  let output = '// Paste this into your albums array in kanye-music.ts\n\n';
+  
+  for (const album of results) {
+    output += `  {\n`;
+    output += `    id: '${album.id}',\n`;
+    output += `    title: '${album.title}',\n`;
+    output += `    year: ${album.year || 2000},\n`;
+    output += `    artworkUrl: '...', // Keep your existing artworkUrl\n`;
+    output += `    songs: [\n`;
+    
+    for (const song of album.songs) {
+      const artistsStr = song.artists.map(a => `'${a.replace(/'/g, "\\'")}'`).join(', ');
+      const titleStr = song.title.replace(/'/g, "\\'");
+      
+      if (song.previewUrl) {
+        output += `      { title: '${titleStr}', artists: [${artistsStr}], previewUrl: '${song.previewUrl}' },\n`;
+      } else {
+        output += `      { title: '${titleStr}', artists: [${artistsStr}] },\n`;
+      }
+    }
+    
+    output += `    ],\n`;
+    output += `  },\n`;
+  }
+  
+  document.getElementById('output').textContent = output;
+}
+
+async function startFetching() {
+  if (isRunning) return;
+  isRunning = true;
+  
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('output').textContent = '';
+  
+  found = 0;
+  notFound = 0;
+  current = 0;
+  results = [];
+  
+  updateProgress();
+  
+  log('🎵 Starting iTunes preview URL fetch...');
+  log('⏱️  Using 800ms delay between requests\n');
+  
+  for (const album of albums) {
+    log(`📀 ${album.title}`, 'album-header');
+    
+    const albumSongs = [];
+    
+    for (const song of album.songs) {
+      current++;
+      
+      const result = await fetchPreviewUrl(song.title, album.title);
+      
+      if (result.url) {
+        log(`  ✅ ${song.title}`, 'success');
+        found++;
+        albumSongs.push({ ...song, previewUrl: result.url });
+      } else {
+        log(`  ❌ ${song.title} (${result.error})`, 'error');
+        notFound++;
+        albumSongs.push(song);
+      }
+      
+      updateProgress();
+      
+      // Delay between requests
+      await new Promise(r => setTimeout(r, 800));
+    }
+    
+    results.push({ ...album, songs: albumSongs });
+    
+    // Extra pause between albums
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  
+  log(`\n✨ Done! Found ${found}, Not found ${notFound}`);
+  
+  generateOutput();
+  
+  document.getElementById('copyBtn').disabled = false;
+  document.getElementById('startBtn').disabled = false;
+  isRunning = false;
+}
+
+function copyOutput() {
+  const output = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Copied to clipboard!');
+  });
+}
+
+document.getElementById('total').textContent = total;
+  </script>
+</body>
+</html>
+

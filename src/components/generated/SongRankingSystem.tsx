@@ -4,9 +4,9 @@ import { ChevronUp, ChevronDown, ChevronLeft, Trophy, Play } from 'lucide-react'
 import { cn } from '../../lib/utils';
 import { kanyeSongs, type Song } from '../../data/kanye-music';
 import { useAudioPreview } from '../../hooks/use-audio-preview';
-import { fetchPreviewUrls } from '../../lib/itunes-api';
+// Preview URLs are pre-stored in data file - no runtime fetching needed
 
-const STORAGE_KEY = 'rankye-song-order';
+const STORAGE_KEY = 'rankye-song-order-v2';
 
 type SongRankingSystemProps = {
   initialSongs?: Song[];
@@ -70,8 +70,17 @@ export const SongRankingSystem = ({
   onBack
 }: SongRankingSystemProps) => {
   const [songs, setSongs] = useState<Song[]>(() => loadSavedOrder(initialSongs));
-  const [previewUrls, setPreviewUrls] = useState<Map<string, string>>(new Map());
-  const [loadingPreviews, setLoadingPreviews] = useState(true);
+  const [previewUrls, setPreviewUrls] = useState<Map<string, string>>(() => {
+    // Initialize with pre-stored preview URLs from data
+    const map = new Map<string, string>();
+    initialSongs.forEach(song => {
+      if (song.previewUrl) {
+        map.set(song.id, song.previewUrl);
+      }
+    });
+    return map;
+  });
+  const [loadingPreviews, setLoadingPreviews] = useState(false);
   const { currentlyPlaying, isLoading: audioLoading, toggle } = useAudioPreview();
 
   // Save to localStorage whenever songs order changes
@@ -84,23 +93,8 @@ export const SongRankingSystem = ({
     }
   }, [songs]);
 
-  // Fetch preview URLs from iTunes on mount
-  useEffect(() => {
-    const loadPreviews = async () => {
-      setLoadingPreviews(true);
-      try {
-        const urls = await fetchPreviewUrls(
-          songs.map(s => ({ id: s.id, title: s.title, artist: s.artist, album: s.album }))
-        );
-        setPreviewUrls(urls);
-      } catch (e) {
-        console.error('Failed to fetch previews:', e);
-      } finally {
-        setLoadingPreviews(false);
-      }
-    };
-    loadPreviews();
-  }, []);
+  // Note: We no longer fetch from iTunes API as fallback since it often returns incorrect results.
+  // All preview URLs are pre-stored in the data file for reliability.
 
   const moveSong = (songId: string, direction: 'up' | 'down') => {
     setSongs(prevSongs => {
@@ -157,10 +151,7 @@ export const SongRankingSystem = ({
                     <p className="text-xl font-bold text-white mb-1">{songs[0].title}</p>
                     <p className="text-gray-400 text-sm">{songs[0].artist}</p>
                     <div className="mt-4 w-20 h-20 rounded-lg overflow-hidden">
-                      <div className="relative w-full h-full">
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/40 via-amber-500/40 to-orange-500/40 mix-blend-multiply" />
-                        <img src={songs[0].image} alt={songs[0].title} className="w-full h-full object-cover" crossOrigin="anonymous" />
-                      </div>
+                      <img src={songs[0].image} alt={songs[0].title} className="w-full h-full object-cover" crossOrigin="anonymous" />
                     </div>
                   </>}
                 </div>
@@ -189,10 +180,7 @@ export const SongRankingSystem = ({
                         <p className="text-xl font-bold text-white mb-1">{albumName}</p>
                         <p className="text-gray-400 text-sm">{count} song{count > 1 ? 's' : ''} in Top 10</p>
                         {albumSong && <div className="mt-4 w-20 h-20 rounded-lg overflow-hidden">
-                          <div className="relative w-full h-full">
-                            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/40 via-amber-500/40 to-orange-500/40 mix-blend-multiply" />
-                            <img src={albumSong.image} alt={albumName} className="w-full h-full object-cover" crossOrigin="anonymous" />
-                          </div>
+                          <img src={albumSong.image} alt={albumName} className="w-full h-full object-cover" crossOrigin="anonymous" />
                         </div>}
                       </>;
                     }
@@ -248,17 +236,14 @@ export const SongRankingSystem = ({
                       <div 
                         className={cn(
                           "flex-shrink-0 relative cursor-pointer",
-                          !hasPreview && !loadingPreviews && "opacity-60 cursor-not-allowed"
+                          !hasPreview && !loadingPreviews && "cursor-not-allowed"
                         )}
                         onClick={() => hasPreview && toggle(song.id, previewUrl)}
                       >
                         <div className="w-20 h-20 rounded-lg overflow-hidden relative">
-                          <div className={cn(
-                            "absolute inset-0 mix-blend-multiply transition-all duration-300",
-                            isPlaying 
-                              ? "bg-gradient-to-br from-cyan-500/50 via-blue-500/50 to-purple-500/50" 
-                              : "bg-gradient-to-br from-red-500/40 via-orange-500/40 to-pink-500/40"
-                          )} />
+                          {isPlaying && (
+                            <div className="absolute inset-0 mix-blend-multiply transition-all duration-300 bg-gradient-to-br from-cyan-500/50 via-blue-500/50 to-purple-500/50" />
+                          )}
                           <img src={song.image} alt={song.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
                           
                           {/* Play/Pause Overlay */}
