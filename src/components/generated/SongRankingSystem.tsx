@@ -155,6 +155,11 @@ export const SongRankingSystem = ({
     }
   };
 
+  const clearDragState = useCallback(() => {
+    setDraggedSongId(null);
+    setDragOverIndex(null);
+  }, []);
+
   const handleDragStart = (e: React.DragEvent, songId: string) => {
     setDraggedSongId(songId);
     e.dataTransfer.effectAllowed = 'move';
@@ -168,8 +173,7 @@ export const SongRankingSystem = ({
   };
 
   const handleDragEnd = () => {
-    setDraggedSongId(null);
-    setDragOverIndex(null);
+    clearDragState();
   };
 
   const handleDrop = (e: React.DragEvent, targetIndex: number) => {
@@ -177,9 +181,16 @@ export const SongRankingSystem = ({
     if (draggedSongId) {
       moveSongToPosition(draggedSongId, targetIndex + 1);
     }
-    setDraggedSongId(null);
-    setDragOverIndex(null);
+    clearDragState();
   };
+
+  useEffect(() => {
+    const onMouseUp = () => {
+      if (draggedSongId) clearDragState();
+    };
+    window.addEventListener('mouseup', onMouseUp);
+    return () => window.removeEventListener('mouseup', onMouseUp);
+  }, [draggedSongId, clearDragState]);
 
   return <div className="min-h-screen bg-[#0f0f0f] py-6 px-3 sm:px-4 lg:px-6">
       <div className="max-w-[1800px] mx-auto">
