@@ -294,6 +294,33 @@ export const albums: Album[] = [
       { title: 'Jesus Lord pt 2', artists: ['Kanye West', 'Jay Electronica', 'the Lox'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/46/ca/4a/46ca4a43-d7fc-690e-4f77-6200a0150bd6/mzaf_18335945361226069555.plus.aac.p.m4a' },
     ],
   },
+  {
+    id: 'bully',
+    title: 'BULLY',
+    year: 2026,
+    artworkUrl:
+      'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/4b/38/d1/4b38d146-381d-ace2-73df-24074576e62b/656465138828_cover.jpg/600x600bb.jpg',
+    songs: [
+      { title: 'KING', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2d/38/76/2d387667-ddcc-6be0-a8e6-08b2c429809d/mzaf_11169366756016083946.plus.aac.p.m4a' },
+      { title: 'THIS A MUST', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9c/5d/e0/9c5de0a3-0fb6-7764-aac3-b6fce82fb431/mzaf_8444258114203328178.plus.aac.p.m4a' },
+      { title: 'FATHER', artists: ['Kanye West', 'Travis Scott'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0a/9f/75/0a9f75c2-4533-9b32-f056-b10a0c62833e/mzaf_5991244608274396835.plus.aac.p.m4a' },
+      { title: 'ALL THE LOVE', artists: ['Kanye West', 'Andre Troutman'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0d/a6/f0/0da6f0f2-0145-676d-9f9c-d28c7e08f258/mzaf_2658965377541339594.plus.aac.p.m4a' },
+      { title: 'PUNCH DRUNK', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/08/f0/90/08f090b4-eb0d-8889-622c-12ca7dbdaa28/mzaf_11649117354568372269.plus.aac.p.m4a' },
+      { title: 'WHATEVER WORKS', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b3/08/4a/b3084ae7-c935-8d18-bbb7-7d24cd191f46/mzaf_5223808594716226735.plus.aac.p.m4a' },
+      { title: "MAMA'S FAVORITE", artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0e/34/fe/0e34fe51-8dda-e834-b299-650007147c5a/mzaf_16579201803562695344.plus.aac.p.m4a' },
+      { title: 'SISTERS AND BROTHERS', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e5/09/9d/e5099d6d-8fe5-4dab-cc9b-dbab86c2d3c5/mzaf_11404680566982211695.plus.aac.p.m4a' },
+      { title: 'BULLY', artists: ['Kanye West', 'CeeLo Green'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d3/20/b5/d320b590-6855-6de8-6ec4-d12ab2f93b6e/mzaf_11307237083688866363.plus.aac.p.m4a' },
+      { title: 'HIGHS AND LOWS', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/00/f3/0f/00f30f85-42fe-45b1-fb01-8565fff0cbeb/mzaf_12810792297446348605.plus.aac.p.m4a' },
+      { title: "I CAN'T WAIT", artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6e/27/f3/6e27f388-d261-48f5-635d-9f4b0d52bdc0/mzaf_10149771919390880487.plus.aac.p.m4a' },
+      { title: 'WHITE LINES', artists: ['Kanye West', 'Andre Troutman'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cf/7b/68/cf7b68af-613d-9e9c-5222-150c132e73ec/mzaf_14271028871630341658.plus.aac.p.m4a' },
+      { title: 'CIRCLES', artists: ['Kanye West', 'Don Toliver'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/59/7d/79/597d795b-d1d6-2587-510e-dc2ddeb02611/mzaf_11531813573929811912.plus.aac.p.m4a' },
+      { title: 'PREACHER MAN', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3e/f6/9a/3ef69ade-7cd2-3bd5-a744-70132ae9da63/mzaf_3645644956333384237.plus.aac.p.m4a' },
+      { title: 'BEAUTY AND THE BEAST', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/43/74/b3/4374b31b-4f4c-7679-2579-3d1fe5e3330b/mzaf_9126685695619964813.plus.aac.p.m4a' },
+      { title: 'DAMN', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/af/fe/2d/affe2de1-e03e-c41f-b098-96c8025bf86f/mzaf_8268488811895026038.plus.aac.p.m4a' },
+      { title: 'LAST BREATH', artists: ['Kanye West', 'Peso Pluma'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2d/74/df/2d74df53-79a6-1eb6-a062-77e108ea284d/mzaf_17345534291722540836.plus.aac.p.m4a' },
+      { title: 'THIS ONE HERE', artists: ['Kanye West'], previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9a/e2/ab/9ae2abae-58d5-7817-08be-053d9cf2c7f8/mzaf_6293913271453268010.plus.aac.p.m4a' },
+    ],
+  },
 ];
 
 // Convert album data to the Song format used by the ranking system
